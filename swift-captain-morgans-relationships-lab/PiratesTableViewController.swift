@@ -13,16 +13,27 @@ class PiratesTableViewController: UITableViewController {
     let appData = CoreDataHelper.sharedInstance
     
     
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        appData.fetchData()
+        self.tableView.reloadData()
+    }
+    
+    
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return appData.pirates.count
+        if let pirates = appData.entities["Pirate"] {
+            return pirates.count
+        }
+        
+        return 0
     }
     
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("pirateCell", forIndexPath: indexPath)
         
-        if let textLabel = cell.textLabel {
-            textLabel.text = appData.pirates[indexPath.row].name
+        if let pirates = appData.entities["Pirate"], let textLabel = cell.textLabel {
+            textLabel.text = pirates[indexPath.row].name
         }
         
         return cell
@@ -32,8 +43,8 @@ class PiratesTableViewController: UITableViewController {
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         let destinationVC = segue.destinationViewController as! ShipsTableViewController
         
-        if let selectedPirateIndexPath = self.tableView.indexPathForSelectedRow {
-            destinationVC.pirate = appData.pirates[selectedPirateIndexPath.row]
+        if let selectedPirateIndexPath = self.tableView.indexPathForSelectedRow, let pirates = appData.entities["Pirate"] {
+            destinationVC.pirate = pirates[selectedPirateIndexPath.row] as? Pirate
         }
     }
     

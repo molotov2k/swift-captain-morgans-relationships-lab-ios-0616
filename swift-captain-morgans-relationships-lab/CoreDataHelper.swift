@@ -12,18 +12,11 @@ import CoreData
 class CoreDataHelper {
     
     static let sharedInstance = CoreDataHelper()
+
     
-    var pirates = [Pirate]()
-    var ships = [Ship]()
-    var engines = [Engine]()
-    
-    var entities: [String : AnyObject]
-    
-    required init() {
-        entities = ["Pirate" : pirates,
-                    "Ship" : ships,
-                    "Engine" : engines]
-    }
+    var entities: [String : [AnyObject]] = ["Pirate" : [Pirate](),
+                                          "Ship" : [Ship](),
+                                          "Engine" : [Engine]()]
     
     
     func saveContext () {
@@ -52,15 +45,18 @@ class CoreDataHelper {
             }
         }
         
-        if pirates.count == 0 {
-            generateTestData()
+        if let pirates = self.entities["Pirate"] {
+            let castedPirates = pirates as! [Pirate]
+            if castedPirates.isEmpty {
+                self.generateTestData()
+                self.fetchData()
+            }
         }
-        
     }
     
     
     func generateTestData() {
-        
+
         let pirateOne = NSEntityDescription.insertNewObjectForEntityForName("Pirate", inManagedObjectContext: managedObjectContext) as! Pirate
         let pirateTwo = NSEntityDescription.insertNewObjectForEntityForName("Pirate", inManagedObjectContext: managedObjectContext) as! Pirate
         let pirateThree = NSEntityDescription.insertNewObjectForEntityForName("Pirate", inManagedObjectContext: managedObjectContext) as! Pirate
@@ -76,6 +72,7 @@ class CoreDataHelper {
         let engineThree = NSEntityDescription.insertNewObjectForEntityForName("Engine", inManagedObjectContext: managedObjectContext) as! Engine
         let engineFour = NSEntityDescription.insertNewObjectForEntityForName("Engine", inManagedObjectContext: managedObjectContext) as! Engine
         let engineFive = NSEntityDescription.insertNewObjectForEntityForName("Engine", inManagedObjectContext: managedObjectContext) as! Engine
+        
         
         engineOne.propulsionType = "Anti-matter Drive"
         engineTwo.propulsionType = "Photon Drive"
@@ -114,9 +111,7 @@ class CoreDataHelper {
         shipFive.engine = engineFive
         shipFive.pirate = pirateOne
         
-        
-        saveContext()
-        fetchData()
+        self.saveContext()
     }
 
     
@@ -133,7 +128,7 @@ class CoreDataHelper {
     
     lazy var managedObjectModel: NSManagedObjectModel = {
         // The managed object model for the application. This property is not optional. It is a fatal error for the application not to be able to find and load its model.
-        let modelURL = NSBundle.mainBundle().URLForResource("CaptainMorgan", withExtension: "momd")!
+        let modelURL = NSBundle.mainBundle().URLForResource("swift_captain_morgans_relationships_lab", withExtension: "momd")!
         return NSManagedObjectModel(contentsOfURL: modelURL)!
     }()
     
@@ -142,7 +137,7 @@ class CoreDataHelper {
         // The persistent store coordinator for the application. This implementation creates and returns a coordinator, having added the store for the application to it. This property is optional since there are legitimate error conditions that could cause the creation of the store to fail.
         // Create the coordinator and store
         let coordinator = NSPersistentStoreCoordinator(managedObjectModel: self.managedObjectModel)
-        let url = self.applicationDocumentsDirectory.URLByAppendingPathComponent("CaptainMorgan.sqlite")
+        let url = self.applicationDocumentsDirectory.URLByAppendingPathComponent("swift-captain-morgans-relationships-lab.sqlite")
         var failureReason = "There was an error creating or loading the application's saved data."
         do {
             try coordinator.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: url, options: nil)
